@@ -21,25 +21,55 @@ class Collection {
     for (let element of iterable) { collection.add(element); }
     return collection;
   }
+
+  [Symbol.iterator]() {
+    return new CollectionIterator(this);
+  }
 }
 
-let collection = new Collection;
 
-console.log(collection);
+class CollectionIterator {
+  constructor(collection) {
+    this.index = 0;
+    this.collection = collection;
+  }
 
-collection.add(10);
-collection.add(10);
+  next() {
+    if (this.index == this.collection.members.length) return {done: true};
 
-console.log(collection);
-console.log(collection.has(10));
+    let result = {
+      value: this.collection.members[this.index],
+      done: false
+    };
 
-collection.delete(10);
+    this.index++;
+    return result;
+  }
+}
 
-console.log(collection);
-console.log(collection.has(10));
-console.log(collection.has(11));
+// TESTING
+// let collection = new Collection;
+//
+// console.log(collection);
+//
+// collection.add(10);
+// collection.add(10);
+//
+// console.log(collection);
+// console.log(collection.has(10));
+//
+// collection.delete(10);
+//
+// console.log(collection);
+// console.log(collection.has(10));
+// console.log(collection.has(11));
+//
+// let collection2 = Collection.from([1,2,3]);
+// console.log(collection2);
+// console.log(collection2.has(3));
+// console.log(collection2.has(4));
 
-let collection2 = Collection.from([1,2,3]);
-console.log(collection2);
-console.log(collection2.has(3));
-console.log(collection2.has(4));
+// Iterator test
+for (let value of Collection.from(["a", "b", "c"])) {
+  console.log(value);
+}
