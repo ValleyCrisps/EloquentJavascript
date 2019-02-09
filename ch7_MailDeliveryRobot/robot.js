@@ -162,6 +162,35 @@ function goalOrientedRobot({place, parcels}, route) {
 
 // runRobot(village.random(), goalOrientedRobot, []);
 
+
+function smartGoalOrientedRobot({place, parcels}, route) {
+  // improves goalOrientedRobot by going to pick up the closest parcel first
+  if (route.length == 0) {
+    let parcelsToFetch = parcels.filter(p => p.place != place);
+    let routes = [];
+    // pick up all parcels first
+    if (parcelsToFetch.length != 0) {
+      for (let i = 0; i < parcelsToFetch.length; i++) {
+        routes.push(findRoute(roadGraph, place, parcelsToFetch[i].place));
+      }
+      // find the closest parcel
+      let distances = routes.map(r => r.length);
+      route = routes[distances.indexOf(Math.min(...distances))];
+    } else {
+      // if the robot has already picked up all parcels, look for closest delivery
+      for (let i = 0; i < parcels.length; i++) {
+        routes.push(findRoute(roadGraph, place, parcels[i].address));
+      }
+      // compute distances
+      let distances = routes.map(r => r.length);
+      route = routes[distances.indexOf(Math.min(...distances))];
+    }
+  }
+  return {direction: route[0], memory: route.slice(1)};
+}
+
+ runRobot(village.random(), smartGoalOrientedRobot, []);
+
 // COMPARE ROBOT SPEED
 function compareRobots(robot1, memory1, robot2, memory2, num_runs=100) {
   // randomly distribute parcels
@@ -178,4 +207,4 @@ function compareRobots(robot1, memory1, robot2, memory2, num_runs=100) {
     robot1: ${total_turns.robot1/num_runs}, robot2: ${total_turns.robot2/num_runs}`);
 }
 
-compareRobots(routeRobot, [], goalOrientedRobot, []);
+compareRobots(smartGoalOrientedRobot, [], goalOrientedRobot, []);
