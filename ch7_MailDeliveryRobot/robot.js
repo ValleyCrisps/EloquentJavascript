@@ -189,7 +189,36 @@ function smartGoalOrientedRobot({place, parcels}, route) {
   return {direction: route[0], memory: route.slice(1)};
 }
 
- runRobot(village.random(), smartGoalOrientedRobot, []);
+
+// runRobot(village.random(), smartGoalOrientedRobot, []);
+
+// solution provided in the book
+function lazyRobot({place, parcels}, route) {
+  if (route.length == 0) {
+    // Describe a route for every parcel
+    let routes = parcels.map(parcel => {
+      if (parcel.place != place) {
+        return {route: findRoute(roadGraph, place, parcel.place),
+                pickUp: true};
+      } else {
+        return {route: findRoute(roadGraph, place, parcel.address),
+                pickUp: false};
+      }
+    });
+
+    // This determines the precedence a route gets when choosing.
+    // Route length counts negatively, routes that pick up a package
+    // get a small bonus.
+    function score({route, pickUp}) {
+      return (pickUp ? 0.5 : 0) - route.length;
+    }
+    route = routes.reduce((a, b) => score(a) > score(b) ? a : b).route;
+  }
+
+  return {direction: route[0], memory: route.slice(1)};
+}
+
+
 
 // COMPARE ROBOT SPEED
 function compareRobots(robot1, memory1, robot2, memory2, num_runs=100) {
@@ -202,9 +231,8 @@ function compareRobots(robot1, memory1, robot2, memory2, num_runs=100) {
     total_turns.robot1 += runRobot(village_with_parcels, robot1, memory1);
     total_turns.robot2 += runRobot(village_with_parcels, robot2, memory2);
   }
-  console.log(total_turns);
   console.log(`Average turns taken:
     robot1: ${total_turns.robot1/num_runs}, robot2: ${total_turns.robot2/num_runs}`);
 }
 
-compareRobots(smartGoalOrientedRobot, [], goalOrientedRobot, []);
+compareRobots(smartGoalOrientedRobot, [], lazyRobot, []);
